@@ -10,6 +10,7 @@ from app.schemas.profile import UserProfileIn, UserProfileOut
 router = APIRouter()
 
 
+@router.get("", response_model=UserProfileOut | None, include_in_schema=False)
 @router.get("/", response_model=UserProfileOut | None)
 async def get_profile(ctx: AuthenticatedContext = Depends(get_current_user)):
     """Fetch user demographic profile used for automated welfare and scholarship scheme matching."""
@@ -29,6 +30,7 @@ async def get_profile(ctx: AuthenticatedContext = Depends(get_current_user)):
     return UserProfileOut(**dict(row._mapping))
 
 
+@router.put("", response_model=UserProfileOut, include_in_schema=False)
 @router.put("/", response_model=UserProfileOut)
 async def update_profile(payload: UserProfileIn, ctx: AuthenticatedContext = Depends(get_current_user)):
     """Create or update user demographic profile."""

@@ -9,6 +9,7 @@ from app.schemas.goal import GoalContribute, GoalCreate, GoalOut
 router = APIRouter()
 
 
+@router.get("", response_model=list[GoalOut], include_in_schema=False)
 @router.get("/", response_model=list[GoalOut])
 async def list_goals(ctx: AuthenticatedContext = Depends(get_current_user)):
     """List all savings goals with calculated progress, remaining amounts, and recommended monthly contributions."""
@@ -56,6 +57,7 @@ async def list_goals(ctx: AuthenticatedContext = Depends(get_current_user)):
     return output
 
 
+@router.post("", response_model=GoalOut, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 @router.post("/", response_model=GoalOut, status_code=status.HTTP_201_CREATED)
 async def create_goal(payload: GoalCreate, ctx: AuthenticatedContext = Depends(get_current_user)):
     """Create a new savings goal."""
@@ -129,4 +131,16 @@ async def contribute_to_goal(goal_id: uuid.UUID, payload: GoalContribute, ctx: A
         monthly_recommended_minor=None,
         created_at=r_dict["created_at"]
     )
+
+
+@router.delete("/{goal_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_goal(goal_id: uuid.UUID, ctx: AuthenticatedContext = Depends(get_current_user)):
+    """Delete a savings goal."""
+    res = await ctx.session.execute(
+        text("DELETE FROM goals WHERE id = :id AND user_id = :u"),
+        {"id": goal_id, "u": ctx.user_id}
+    )
+    if res.rowcount == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Goal not found.")
+    return None
 

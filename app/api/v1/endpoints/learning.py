@@ -8,6 +8,7 @@ from app.schemas.learning import LearningModuleOut, QuizResultOut, QuizSubmitIn
 router = APIRouter()
 
 
+@router.get("", response_model=list[LearningModuleOut], include_in_schema=False)
 @router.get("/", response_model=list[LearningModuleOut])
 async def list_modules(
     lang: Literal["en", "kn", "hi"] = Query(default="en"),

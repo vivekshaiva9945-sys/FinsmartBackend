@@ -29,3 +29,4 @@ Interactive Swagger docs available at [http://localhost:8000/docs](http://localh
 python -m unittest discover -s tests
 ```
 *(All 19 unit tests verify money math, rules engine, PII scrubbing, and security).*
+

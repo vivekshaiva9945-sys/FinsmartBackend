@@ -8,6 +8,7 @@ from app.schemas.consent import ConsentOut, ConsentUpdate
 router = APIRouter()
 
 
+@router.get("", response_model=list[ConsentOut], include_in_schema=False)
 @router.get("/", response_model=list[ConsentOut])
 async def list_consents(ctx: AuthenticatedContext = Depends(get_current_user)):
     """Fetch user active DPDP 2023 consent records."""

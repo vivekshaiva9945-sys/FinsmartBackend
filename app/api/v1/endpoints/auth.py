@@ -84,18 +84,35 @@ async def register(payload: UserRegister, tenant: TenantContext = Depends(get_te
 
 @router.post("/login", response_model=TokenResponse)
 async def login(payload: UserLogin, tenant: TenantContext = Depends(get_tenant_db)):
-    """Authenticate user with email and password within the active tenant."""
+    """Authenticate user with email and password within the active tenant or fallback."""
     res = await tenant.session.execute(
         text("""
-            SELECT id, email, password_hash, full_name, role, is_active
+            SELECT id, email, password_hash, full_name, role, is_active, tenant_id
             FROM users
             WHERE email = :email AND tenant_id = :tenant_id
         """),
         {"email": payload.email.lower().strip(), "tenant_id": tenant.tenant_id}
     )
     user = res.first()
+    active_tenant_id = tenant.tenant_id
+
+    # Fallback to locate user by email across tenants if header mismatched
+    if not user:
+        res_fb = await tenant.session.execute(
+            text("""
+                SELECT id, email, password_hash, full_name, role, is_active, tenant_id
+                FROM users
+                WHERE email = :email
+            """),
+            {"email": payload.email.lower().strip()}
+        )
+        user = res_fb.first()
+        if user:
+            active_tenant_id = user.tenant_id
     
-    if not user or not verify_password(payload.password, user.password_hash):
+    is_verified = verify_password(payload.password, user.password_hash) if user else False
+
+    if not user or not is_verified:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password."
@@ -104,16 +121,16 @@ async def login(payload: UserLogin, tenant: TenantContext = Depends(get_tenant_d
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account has been deactivated. Please contact your institution admin."
+            detail="User account has been deactivated. Please contact your administrator."
         )
 
-    token = create_access_token(user_id=user.id, tenant_id=tenant.tenant_id, role=user.role)
+    token = create_access_token(user_id=user.id, tenant_id=active_tenant_id, role=user.role)
     
     return TokenResponse(
         access_token=token,
         token_type="bearer",
         user_id=user.id,
-        tenant_id=tenant.tenant_id,
+        tenant_id=active_tenant_id,
         role=user.role,
         full_name=user.full_name,
         email=user.email

@@ -8,6 +8,7 @@ from app.schemas.account import AccountCreate, AccountOut
 router = APIRouter()
 
 
+@router.get("", response_model=list[AccountOut], include_in_schema=False)
 @router.get("/", response_model=list[AccountOut])
 async def list_accounts(ctx: AuthenticatedContext = Depends(get_current_user)):
     """List all active accounts (Bank, Cash, Wallets) for the current user."""
@@ -23,6 +24,7 @@ async def list_accounts(ctx: AuthenticatedContext = Depends(get_current_user)):
     return [AccountOut(**dict(r._mapping)) for r in res.all()]
 
 
+@router.post("", response_model=AccountOut, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 @router.post("/", response_model=AccountOut, status_code=status.HTTP_201_CREATED)
 async def create_account(payload: AccountCreate, ctx: AuthenticatedContext = Depends(get_current_user)):
     """Create a new financial tracking account."""

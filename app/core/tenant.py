@@ -32,7 +32,7 @@ class AuthenticatedContext:
     full_name: str
 
 
-async def get_tenant_db(x_tenant_id: str = Header(default="navkis")) -> Any:
+async def get_tenant_db(x_tenant_id: str = Header(default="public")) -> Any:
     """
     Extracts tenant slug from X-Tenant-ID header.
     Validates tenant and establishes a transaction with 'app.current_tenant_id'

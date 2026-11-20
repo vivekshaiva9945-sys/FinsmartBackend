@@ -8,6 +8,7 @@ from app.services.rules_engine import evaluate_scheme_rules
 router = APIRouter()
 
 
+@router.get("", response_model=list[SchemeOut], include_in_schema=False)
 @router.get("/", response_model=list[SchemeOut])
 async def list_schemes(tenant: TenantContext = Depends(get_tenant_db)):
     """List all verified Central and State welfare and scholarship schemes."""

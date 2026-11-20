@@ -9,6 +9,7 @@ from app.services.analytics_service import get_budget_statuses
 router = APIRouter()
 
 
+@router.get("", response_model=list[BudgetOut], include_in_schema=False)
 @router.get("/", response_model=list[BudgetOut])
 async def list_budgets(ctx: AuthenticatedContext = Depends(get_current_user)):
     """List all configured category budgets for the current user."""
@@ -19,6 +20,7 @@ async def list_budgets(ctx: AuthenticatedContext = Depends(get_current_user)):
     return [BudgetOut(**dict(r._mapping)) for r in res.all()]
 
 
+@router.put("", response_model=BudgetOut, include_in_schema=False)
 @router.put("/", response_model=BudgetOut)
 async def upsert_budget(payload: BudgetCreate, ctx: AuthenticatedContext = Depends(get_current_user)):
     """Set or update monthly budget limit for a specific category."""
@@ -44,6 +46,18 @@ async def upsert_budget(payload: BudgetCreate, ctx: AuthenticatedContext = Depen
     )
     row = res.one()
     return BudgetOut(**dict(row._mapping))
+
+
+@router.delete("/{budget_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_budget(budget_id: uuid.UUID, ctx: AuthenticatedContext = Depends(get_current_user)):
+    """Remove a configured category budget."""
+    res = await ctx.session.execute(
+        text("DELETE FROM budgets WHERE id = :id AND user_id = :u"),
+        {"id": budget_id, "u": ctx.user_id}
+    )
+    if res.rowcount == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Budget not found.")
+    return None
 
 
 @router.get("/status", response_model=list[BudgetStatusOut])

@@ -11,6 +11,7 @@ from app.services.analytics_service import get_monthly_summary
 router = APIRouter()
 
 
+@router.get("", response_model=list[TransactionOut], include_in_schema=False)
 @router.get("/", response_model=list[TransactionOut])
 async def list_transactions(
     limit: int = Query(default=50, ge=1, le=200),
@@ -41,6 +42,7 @@ async def list_transactions(
     return [TransactionOut(**dict(r._mapping)) for r in res.all()]
 
 
+@router.post("", response_model=TransactionOut, status_code=status.HTTP_201_CREATED, include_in_schema=False)
 @router.post("/", response_model=TransactionOut, status_code=status.HTTP_201_CREATED)
 async def create_transaction(payload: TransactionCreate, ctx: AuthenticatedContext = Depends(get_current_user)):
     """
