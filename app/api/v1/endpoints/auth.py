@@ -16,6 +16,12 @@ async def register(payload: UserRegister, tenant: TenantContext = Depends(get_te
     Registers a new user scoped to the active tenant/college.
     Strictly requires DPDP Act 2023 consent for financial data processing.
     """
+    if payload.honeypot:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Automated spam bot submission detected."
+        )
+
     if not payload.consent_data_processing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -85,6 +91,12 @@ async def register(payload: UserRegister, tenant: TenantContext = Depends(get_te
 @router.post("/login", response_model=TokenResponse)
 async def login(payload: UserLogin, tenant: TenantContext = Depends(get_tenant_db)):
     """Authenticate user with email and password within the active tenant or fallback."""
+    if payload.honeypot:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Automated spam bot submission detected."
+        )
+
     res = await tenant.session.execute(
         text("""
             SELECT id, email, password_hash, full_name, role, is_active, tenant_id

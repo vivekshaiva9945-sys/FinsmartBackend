@@ -10,11 +10,13 @@ class UserRegister(BaseModel):
     phone_number: str | None = Field(default=None, max_length=20)
     role: str = Field(default="student", pattern="^(student|faculty|college_admin|admin)$")
     consent_data_processing: bool = Field(description="Explicit consent for processing financial records (DPDP Act 2023)")
+    honeypot: str | None = Field(default=None, description="Spam bot trap - must remain empty")
 
 
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    honeypot: str | None = Field(default=None, description="Spam bot trap - must remain empty")
 
 
 class TokenResponse(BaseModel):
