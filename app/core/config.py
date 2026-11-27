@@ -1,4 +1,5 @@
 import os
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,6 +27,21 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore"
     )
+
+    @model_validator(mode="after")
+    def validate_production_security(self) -> "Settings":
+        if self.environment == "production":
+            insecure_defaults = [
+                "super_secret_finsmart_jwt_key_at_least_32_characters_long_2026",
+                "secret",
+                "changeme",
+            ]
+            if self.jwt_secret in insecure_defaults or len(self.jwt_secret) < 32:
+                raise ValueError(
+                    "CRITICAL SECURITY: In production environment, JWT_SECRET must be configured with "
+                    "a secure random secret at least 32 characters long."
+                )
+        return self
 
     @property
     def cors_origin_list(self) -> list[str]:

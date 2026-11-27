@@ -34,6 +34,9 @@ RATE_LIMIT_WINDOW = 60  # seconds
 RATE_LIMITS = {
     "/v1/auth/login": 15,
     "/v1/auth/register": 10,
+    "/v1/ai/chat": 20,
+    "/v1/profiles/erasure": 5,
+    "/v1/profiles/dsar-export": 10,
     "default": 300,
 }
 
