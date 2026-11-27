@@ -8,9 +8,10 @@ from app.schemas.ai import AIChatResponse, Citation
 
 # Financial safety guardrails: refuse speculative stock tips, crypto betting, and get-rich schemes
 _SPECULATIVE_PATTERNS = [
-    re.compile(r"\b(buy|invest in|trade)\s+(crypto|bitcoin|ethereum|doge|shiba|coin|token)\b", re.IGNORECASE),
-    re.compile(r"\b(which|best)\s+stocks?\s+to\s+(buy|trade|invest)\b", re.IGNORECASE),
-    re.compile(r"\b(guaranteed|double|triple|100x)\s+(returns?|profit|money)\b", re.IGNORECASE),
+    re.compile(r"\b(crypto|cryptocurrency|bitcoin|btc|ethereum|eth|doge|memecoin)\b", re.IGNORECASE),
+    re.compile(r"\b(which|best)\s+(stocks?|shares?)\b", re.IGNORECASE),
+    re.compile(r"\b(stocks?|shares?)\s+to\s+(buy|trade|invest)\b", re.IGNORECASE),
+    re.compile(r"\b(guaranteed|double|triple|100x)\b.*?\b(returns?|profit|money)\b", re.IGNORECASE),
     re.compile(r"\b(intraday|future|options|f&o|call|put|derivative)\s+tips?\b", re.IGNORECASE),
     re.compile(r"\b(gambling|betting|rummy|casino|lottery)\b", re.IGNORECASE),
 ]
