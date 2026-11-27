@@ -29,7 +29,20 @@ class Settings(BaseSettings):
     )
 
     @model_validator(mode="after")
-    def validate_production_security(self) -> "Settings":
+    def sanitize_and_validate_settings(self) -> "Settings":
+        # Normalize database URL for Supabase / Render compatibility
+        url = self.database_url
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgresql://") and not url.startswith("postgresql+asyncpg://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        
+        # asyncpg expects ssl=require instead of sslmode=require
+        if "sslmode=" in url:
+            url = url.replace("sslmode=", "ssl=")
+            
+        self.database_url = url
+
         if self.environment == "production":
             insecure_defaults = [
                 "super_secret_finsmart_jwt_key_at_least_32_characters_long_2026",
