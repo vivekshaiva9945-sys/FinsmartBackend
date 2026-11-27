@@ -12,6 +12,7 @@ from app.api.v1.endpoints.calculators import (
     sip_endpoint,
 )
 from app.core.tenant import AuthenticatedContext
+from app.main import health_check
 from app.schemas.auth import UserLogin, UserRegister
 from app.schemas.budget import BudgetCreate
 from app.schemas.calculator import EMICalculatorIn, EmergencyFundIn, SIPCalculatorIn
@@ -163,6 +164,13 @@ class TestApiEndpoints(unittest.TestCase):
         with self.assertRaises(HTTPException) as cm_fac:
             run_sync(get_institution_stats(faculty_ctx))
         self.assertEqual(cm_fac.exception.status_code, 403)
+
+    def test_health_check_endpoint(self):
+        """Verify health check probe returns status healthy."""
+        res = run_sync(health_check())
+        self.assertEqual(res["status"], "healthy")
+        self.assertIn("service", res)
+        self.assertIn("version", res)
 
 
 if __name__ == "__main__":

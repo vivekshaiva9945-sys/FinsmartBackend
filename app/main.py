@@ -101,6 +101,7 @@ app.include_router(api_router, prefix="/v1")
 
 
 @app.get("/health", tags=["Health & Diagnostics"])
+@app.get("/v1/health", tags=["Health & Diagnostics"], include_in_schema=False)
 async def health_check():
     """Healthcheck endpoint for Docker Compose and Kubernetes readiness/liveness probes."""
     return {
