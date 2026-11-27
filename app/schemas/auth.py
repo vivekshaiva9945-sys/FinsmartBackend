@@ -1,6 +1,6 @@
 import datetime as dt
 import uuid
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class UserRegister(BaseModel):
@@ -11,6 +11,13 @@ class UserRegister(BaseModel):
     role: str = Field(default="student", pattern="^(student|faculty|college_admin|admin)$")
     consent_data_processing: bool = Field(description="Explicit consent for processing financial records (DPDP Act 2023)")
     honeypot: str | None = Field(default=None, description="Spam bot trap - must remain empty")
+
+    @field_validator("consent_data_processing")
+    @classmethod
+    def validate_dpdp_consent(cls, v: bool) -> bool:
+        if not v:
+            raise ValueError("Explicit consent for data processing is legally required under India's DPDP Act 2023.")
+        return v
 
 
 class UserLogin(BaseModel):
